@@ -27,33 +27,19 @@ This script does the following:
 2. Modifies`dev_size` array values with each storage size (the same as in your
    grub conf, see the [running Strata](#runningstrata) section) in bytes.
     - `dev_size[0]`: could be always 0 (not used)
-    - `dev_size[1]`: dax0.0 size
+    - `dev_size[1]`: dax0.0 size (NVM shared area size, must be power of 2)
     - `dev_size[2]`: SSD size : just put 0 for now
     - `dev_size[3]`: HDD size : put 0 for now
-    - `dev_size[4]`: dax1.0 size
+    - `dev_size[4]`: dax1.0 size (per-app log size, must be power of 2)
 
-##### 2. Build kernel
-~~~
-cd kernel/kbuild
-make -f Makefile.setup .config
-make -f Makefile.setup
-make -j
-sudo make modules_install ; sudo make install
-~~~
-
-This step requires reboot your machine after installing the new kernel.
-##### 3. Build glibc
-
-Building glibc might not be an easy task in some machines. We provide pre-built libc binaries in "shim/glibc-build".
-If you keep failing to build glibc, I recommand to use the pre-built glibc for your testing.
-
-~~~
-cd shim
-make
-~~~
-##### 4. Build dependent libraries (SPDK, NVML, JEMALLOC)
+##### 2. Build dependent libraries (SPDK, NVML, JEMALLOC)
 ~~~
 cd libfs/lib
+git clone https://github.com/pmem/ndctl.git
+cd ndctl
+<Follow installation guide here: https://docs.pmem.io/getting-started-guide/installing-ndctl>
+cd ..
+
 git clone https://github.com/pmem/nvml
 make
 
@@ -67,19 +53,19 @@ make
 For SPDK build errors, please check a SPDK website (http://www.spdk.io/doc/getting_started.html)
 
 For NVML build errors, please check a NVML repository (https://github.com/pmem/nvml/)
-##### 5. Build Libfs
+##### 3. Build Libfs
 ~~~
 cd libfs
 make
 ~~~
-##### 6. Build KernelFS
+##### 4. Build KernelFS
 ~~~
 cd kernfs
 make
 cd tests
 make
 ~~~
-##### 7. Build libshim
+##### 5. Build libshim
 ~~~
 cd shim/libshim
 make
@@ -102,6 +88,13 @@ device under the /dev directory. Adding `GRUB_CMDLINE_LINUX="memmap=16G!4G,
 
 Details are available at:
 http://pmem.io/2016/02/22/pm-emulation.html
+
+If using remote booting, append memmap to the kernel comman in `menu.lst`
+
+e.g., the following will reserve [4G:6G] to pmem0 and [6G:8G] for pmem1
+~~~
+kernel <...> ip=dhcp memmap=2G!4G memmap=2G!6G 
+~~~
 
 This step requires rebooting your machine.
 
@@ -165,6 +158,9 @@ cd libfs/tests
 make
 sudo ./run.sh iotest sw 2G 4K 1 #sequential write, 2GB file with 4K IO and 1 thread
 ~~~
+
+If running into errors regarding shared library, make sure that you add the library's
+folder in the `$LD_LIBRARY_PATH` in `run.sh`. 
 
 ### Strata configuration ###
 ##### 1. LibFS configuration ######
