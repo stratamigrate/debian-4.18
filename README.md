@@ -113,19 +113,22 @@ sudo ./use_dax.sh unbind
 ~~~
 
 ##### 3. Setup storage size
+See step 1 in the building stage.
 This step requires rebuilding of Libfs and KernFS.
-~~~
-TODO: Some instructions to setup storage size (by a script or manually)
-~~~
 
 ##### 4. Setup UIO for SPDK
+This step binds the NVMe SSD to user space and also allocates hugepages.
+The `HUGEMEM` variable below is in MiB. Default is 2048 MiB.
+
+*We need more DRAM to allocate the default size*
+
 ~~~
 cd utils
-sudo ./uio_setup.sh linux config
+sudo HUGEMEM=<huge-pages> ./spdk_setup.sh config
 ~~~
 To rollback to previous setting,
 ~~~
-sudo ./uio_setup.sh linux reset
+sudo ./spdk_setup.sh linux reset
 ~~~
 
 ##### 5. Formatting storages
