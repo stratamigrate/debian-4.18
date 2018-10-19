@@ -120,7 +120,7 @@ This step requires rebuilding of Libfs and KernFS.
 This step binds the NVMe SSD to user space and also allocates hugepages.
 The `HUGEMEM` variable below is in MiB. Default is 2048 MiB.
 
-*We need more DRAM to allocate the default size*
+*We need more DRAM to allocate the default size (TODO: how sensitive performance is to no. of hugepages)*
 
 ~~~
 cd utils
@@ -128,7 +128,7 @@ sudo HUGEMEM=<huge-pages> ./spdk_setup.sh config
 ~~~
 To rollback to previous setting,
 ~~~
-sudo ./spdk_setup.sh linux reset
+sudo ./spdk_setup.sh reset
 ~~~
 
 ##### 5. Formatting storages
